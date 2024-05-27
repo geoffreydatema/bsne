@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
 from PyQt5.QtCore import QFile
+from editor.EditorEngine import EditorEngine
+from editor.EditorScene import EditorScene
 
 class Editor(QWidget):
     def __init__(self, parent=None):
@@ -19,9 +21,7 @@ class Editor(QWidget):
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
-
-        # add QGraphicsScene
-
-        # add QGraphicsView
+        self.editorEngine = EditorEngine()
+        self.layout.addWidget(self.editorEngine)
 
         self.show()
