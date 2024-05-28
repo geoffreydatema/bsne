@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
 from PyQt5.QtCore import QFile
 from editor.EditorEngine import EditorEngine
-from editor.EditorScene import EditorScene
+from core.Node import BaseNode
 
 class Editor(QWidget):
     def __init__(self, parent=None):
@@ -10,7 +10,7 @@ class Editor(QWidget):
 
     def loadStylesheet(self, filename):
         file = QFile(filename)
-        file.open(QFile.ReadOnly | QFile.Text)
+        file.open(QFile.ReadOnly)
         stylesheet = file.readAll()
         QApplication.instance().setStyleSheet(str(stylesheet, encoding="utf=8"))
     
@@ -23,5 +23,7 @@ class Editor(QWidget):
         self.setLayout(self.layout)
         self.editorEngine = EditorEngine()
         self.layout.addWidget(self.editorEngine)
+
+        testNode = BaseNode(self.editorEngine.editorScene, "Test")
 
         self.show()
