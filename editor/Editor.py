@@ -24,6 +24,10 @@ class Editor(QWidget):
         self.editorEngine = EditorEngine()
         self.layout.addWidget(self.editorEngine)
 
+        # test nodes
         testNode = BaseNode(self.editorEngine.editorScene, "Test")
+        testNode.setPosition(0, 0)
+        anotherNode = BaseNode(self.editorEngine.editorScene, "Another Test Node")
+        anotherNode.setPosition(-300, 0)
 
         self.show()

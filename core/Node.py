@@ -9,6 +9,8 @@ class BaseNode(QGraphicsItem):
         self.title = title
         self.inputs = inputs
         self.outputs = outputs
+        self.tx = 0
+        self.ty = 0
         self.width = 200
         self.height = 300
         self.radius = 8
@@ -56,3 +58,11 @@ class BaseNode(QGraphicsItem):
 
         self.scene.addNode(self)
         self.scene.addItem(self)
+
+    def setPosition(self, x, y):
+        self.tx = x
+        self.ty = y
+        self.setPos(self.tx, self.ty)
+    
+    def getPosition(self):
+        return(self.tx, self.ty)
