@@ -20,6 +20,8 @@ class BaseNode(QGraphicsItem):
         self.titleBrush = QBrush(QColor("#444444"))
         self.backgroundBrush = QBrush(QColor("#222222"))
         self.titleElement = QGraphicsTextItem(self)
+        self.outlinePenUnselected = QPen(QColor("#111111"))
+        self.outlinePenSelected = QPen(QColor("#cccccc"))
 
         self.init()
     
@@ -46,6 +48,13 @@ class BaseNode(QGraphicsItem):
         painter.setPen(Qt.NoPen)
         painter.setBrush(self.backgroundBrush)
         painter.drawPath(contentPath.simplified())
+
+        # outline
+        outlinePath = QPainterPath()
+        outlinePath.addRoundedRect(0, 0, self.width, self.height, self.radius, self.radius)
+        painter.setPen(self.outlinePenUnselected if not self.isSelected() else self.outlinePenSelected)
+        painter.setBrush(Qt.NoBrush)
+        painter.drawPath(outlinePath.simplified())
         
     def init(self):
         self.titleElement.setPlainText(self.title)
