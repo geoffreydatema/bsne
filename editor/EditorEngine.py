@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QGraphicsView
 from PyQt5.QtCore import Qt, QEvent
-from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtGui import QMouseEvent, QPainter
 from editor.EditorScene import EditorScene
 
 class EditorEngine(QGraphicsView):
@@ -11,6 +11,8 @@ class EditorEngine(QGraphicsView):
     def init(self):
         self.editorScene = EditorScene()
         self.setScene(self.editorScene)
+        self.setRenderHints(QPainter.Antialiasing | QPainter.HighQualityAntialiasing | QPainter.TextAntialiasing | QPainter.SmoothPixmapTransform)
+        self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.zoomInFactor = 1.25

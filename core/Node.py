@@ -2,6 +2,52 @@ from PyQt5.QtWidgets import QGraphicsItem, QGraphicsTextItem
 from PyQt5.QtGui import QPen, QColor, QBrush, QPainterPath
 from PyQt5.QtCore import Qt, QRectF
 
+# Wire class
+
+# Socket class? Or do we just have the Unit class display the socket?
+
+# Unit classes (all Unit classes can have their socket turned on or off)
+
+class OutputUnit(QGraphicsItem):
+    def __init__(self, width, unitSize, node=None, parent=None):
+        super().__init__(parent)
+
+        self.socketSize = 8
+        self.width = width
+        self.height = unitSize
+        self.unitBrush = QBrush(QColor("#333333"))
+        self.socketBrush = QBrush(QColor("#ffaa00"))
+        self.socketOutlinePen = QPen(QColor("#111111"))
+
+        print(self.width, self.height)
+
+    def boundingRect(self):
+        return QRectF(0, 0, self.width, self.height).normalized()
+    
+    # def paintUnit(self, painter):
+    #     unitPath = QPainterPath()
+    #     unitPath.setFillRule(Qt.WindingFill)
+    #     unitPath.addRect(1, self.height, self.width, self.height)
+    #     painter.setPen(Qt.NoPen)
+    #     painter.setBrush(self.unitBrush)
+    #     painter.drawPath(unitPath.simplified())
+    
+    def paintSocket(self, painter):
+        painter.setPen(self.socketOutlinePen)
+        painter.setBrush(self.socketBrush)
+        painter.drawEllipse(int(self.width - (self.socketSize // 2)), int((self.height * 1.5) - (self.socketSize // 2)), self.socketSize, self.socketSize)
+        
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
+        self.paintSocket(painter)
+
+#   Input Label Unit class
+
+#   Input Scalar Unit class
+
+#   Input Vector Unit class
+
+#   Input Text Unit class
+
 class BaseNode(QGraphicsItem):
     def __init__(self, scene, title="New Node", inputs=[], outputs=[], parent=None):
         super().__init__(parent)
@@ -20,10 +66,15 @@ class BaseNode(QGraphicsItem):
         self.titleColor = QColor("#dddddd")
         self.titleBrush = QBrush(QColor("#444444"))
         self.backgroundBrush = QBrush(QColor("#222222"))
-        self.unitBrush = QBrush(QColor("#333333"))
         self.titleElement = QGraphicsTextItem(self)
         self.outlinePenUnselected = QPen(QColor("#111111"))
         self.outlinePenSelected = QPen(QColor("#cccccc"))
+        self.unitStack = []
+
+        testOutput = OutputUnit(self.width, self.unitSize, parent=self)
+        self.unitStack.append(testOutput)
+
+        print(self.unitStack[0].pos().x())
 
         self.init()
     
@@ -44,8 +95,6 @@ class BaseNode(QGraphicsItem):
         bottomPath = QPainterPath()
         bottomPath.setFillRule(Qt.WindingFill)
         bottomPath.addRoundedRect(0, 0, self.width, self.height, self.radius, self.radius)
-        # bottomPath.addRect(0, unitStackOffset, self.radius, self.radius)
-        # bottomPath.addRect(self.width - self.radius, unitStackOffset, self.radius, self.radius)
         painter.setPen(Qt.NoPen)
         painter.setBrush(self.backgroundBrush)
         painter.drawPath(bottomPath.simplified())
@@ -57,18 +106,9 @@ class BaseNode(QGraphicsItem):
         painter.setBrush(Qt.NoBrush)
         painter.drawPath(outlinePath.simplified())
 
-    def paintUnit(self, painter):
-        unitPath = QPainterPath()
-        unitPath.setFillRule(Qt.WindingFill)
-        unitPath.addRect(0, self.unitSize, self.width, self.unitSize)
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(self.unitBrush)
-        painter.drawPath(unitPath.simplified())
-
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         self.paintBottom(painter)
         self.paintTitle(painter)
-        self.paintUnit(painter)
         self.paintOutline(painter)
 
     def init(self):
@@ -82,6 +122,7 @@ class BaseNode(QGraphicsItem):
 
         self.scene.addNode(self)
         self.scene.addItem(self)
+        # self.scene.addItem(self.unitStack[0])
 
     def setPosition(self, x, y):
         self.tx = x
