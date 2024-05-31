@@ -6,41 +6,51 @@ from PyQt5.QtCore import Qt, QRectF
 
 # Socket class? Or do we just have the Unit class display the socket?
 
-# Unit classes (all Unit classes can have their socket turned on or off)
-
 class OutputUnit(QGraphicsItem):
-    def __init__(self, width, unitSize, node=None, parent=None):
+    def __init__(self, index=0, parent=None):
         super().__init__(parent)
 
+        self.index = index
         self.socketSize = 8
-        self.width = width
-        self.height = unitSize
+        self.width = parent.width
+        self.height = parent.unitSize
         self.unitBrush = QBrush(QColor("#333333"))
-        self.socketBrush = QBrush(QColor("#ffaa00"))
+        self.socketBrush = QBrush(QColor("#13FF00"))
         self.socketOutlinePen = QPen(QColor("#111111"))
-
-        print(self.width, self.height)
 
     def boundingRect(self):
         return QRectF(0, 0, self.width, self.height).normalized()
     
-    # def paintUnit(self, painter):
-    #     unitPath = QPainterPath()
-    #     unitPath.setFillRule(Qt.WindingFill)
-    #     unitPath.addRect(1, self.height, self.width, self.height)
-    #     painter.setPen(Qt.NoPen)
-    #     painter.setBrush(self.unitBrush)
-    #     painter.drawPath(unitPath.simplified())
-    
     def paintSocket(self, painter):
         painter.setPen(self.socketOutlinePen)
         painter.setBrush(self.socketBrush)
-        painter.drawEllipse(int(self.width - (self.socketSize // 2)), int((self.height * 1.5) - (self.socketSize // 2)), self.socketSize, self.socketSize)
+        painter.drawEllipse(int(self.width - (self.socketSize // 2)), int((self.height * self.index) + (self.height * 1.5) - (self.socketSize // 2)), self.socketSize, self.socketSize)
         
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         self.paintSocket(painter)
 
-#   Input Label Unit class
+class InputLabelUnit(QGraphicsItem):
+    def __init__(self, index=0, parent=None):
+        super().__init__(parent)
+
+        self.index = index
+        self.socketSize = 8
+        self.width = parent.width
+        self.height = parent.unitSize
+        self.unitBrush = QBrush(QColor("#333333"))
+        self.socketBrush = QBrush(QColor("#ffaa00"))
+        self.socketOutlinePen = QPen(QColor("#111111"))
+
+    def boundingRect(self):
+        return QRectF(0, 0, self.width, self.height).normalized()
+    
+    def paintSocket(self, painter):
+        painter.setPen(self.socketOutlinePen)
+        painter.setBrush(self.socketBrush)
+        painter.drawEllipse(-self.socketSize // 2, int((self.height * self.index) + (self.height * 1.5) - (self.socketSize // 2)), self.socketSize, self.socketSize)
+        
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
+        self.paintSocket(painter)
 
 #   Input Scalar Unit class
 
@@ -71,10 +81,8 @@ class BaseNode(QGraphicsItem):
         self.outlinePenSelected = QPen(QColor("#cccccc"))
         self.unitStack = []
 
-        testOutput = OutputUnit(self.width, self.unitSize, parent=self)
-        self.unitStack.append(testOutput)
-
-        print(self.unitStack[0].pos().x())
+        testUnit = OutputUnit(0, parent=self)
+        self.unitStack.append(testUnit)
 
         self.init()
     
@@ -122,7 +130,6 @@ class BaseNode(QGraphicsItem):
 
         self.scene.addNode(self)
         self.scene.addItem(self)
-        # self.scene.addItem(self.unitStack[0])
 
     def setPosition(self, x, y):
         self.tx = x
