@@ -1,10 +1,42 @@
-from PyQt5.QtWidgets import QGraphicsItem, QGraphicsTextItem, QLabel
+from PyQt5.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsPathItem
 from PyQt5.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
-from PyQt5.QtCore import Qt, QRectF
+from PyQt5.QtCore import Qt, QRectF, QPointF
 
-# Wire class
+class Wire(QGraphicsPathItem):
+    def __init__(self, scene, startSocket, endSocket, parent=None):
+        super().__init__(parent)
+        self.scene = scene
+        self.startSocket = startSocket
+        self.endSocket = endSocket
+        self.wireColour = QColor("#777777")
+        self.wireColourSelected = QColor("#ffffff")
+        self.wirePen = QPen(self.wireColour)
+        self.wirePenSelected = QPen(self.wireColourSelected)
+        self.wirePen.setWidthF(2.0)
+        self.wirePenSelected.setWidthF(2.0)
+        self.setFlag(QGraphicsItem.ItemIsSelectable)
+        self.setZValue(-1)
+        self.startPosition = [0, 0]
+        self.endPosition = [200, 100]
 
-# Socket class? Or do we just have the Unit class display the socket?
+        self.scene.addItem(self)
+
+    def setStartPosition(self, x, y):
+        self.startPosition = [x, y]
+    
+    def setEndPosition(self, x, y):
+        self.endPosition = [x, y]
+
+    def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
+        self.updatePath()
+        painter.setPen(self.wirePen if not self.isSelected() else self.wirePenSelected)
+        painter.setBrush(Qt.NoBrush)
+        painter.drawPath(self.path())
+
+    def updatePath(self):
+        path = QPainterPath(QPointF(self.startPosition[0], self.startPosition[1]))
+        path.lineTo(self.endPosition[0], self.endPosition[1])
+        self.setPath(path)
 
 class OutputUnit(QGraphicsItem):
     def __init__(self, index=0, parent=None):

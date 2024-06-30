@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
 from PyQt5.QtCore import QFile
 from editor.EditorEngine import EditorEngine
-from core.Node import BaseNode
+from core.Node import BaseNode, Wire
 
 class Editor(QWidget):
     def __init__(self, parent=None):
@@ -24,10 +24,12 @@ class Editor(QWidget):
         self.editorEngine = EditorEngine()
         self.layout.addWidget(self.editorEngine)
 
-        # test nodes
+        # test nodes and wires
         testNode = BaseNode(self.editorEngine.editorScene, "Test")
         testNode.setPosition(0, 0)
         anotherNode = BaseNode(self.editorEngine.editorScene)
         anotherNode.setPosition(-300, 0)
+
+        testWire = Wire(self.editorEngine.editorScene, 0, 1)
 
         self.show()
