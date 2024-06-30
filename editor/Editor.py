@@ -27,7 +27,7 @@ class Editor(QWidget):
         # test nodes
         testNode = BaseNode(self.editorEngine.editorScene, "Test")
         testNode.setPosition(0, 0)
-        anotherNode = BaseNode(self.editorEngine.editorScene, "Another Test Node")
+        anotherNode = BaseNode(self.editorEngine.editorScene)
         anotherNode.setPosition(-300, 0)
 
         self.show()

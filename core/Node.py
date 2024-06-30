@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsTextItem, QLabel
-from PyQt5.QtGui import QPen, QColor, QBrush, QPainterPath
+from PyQt5.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
 from PyQt5.QtCore import Qt, QRectF
 
 # Wire class
@@ -30,7 +30,7 @@ class OutputUnit(QGraphicsItem):
         self.paintSocket(painter)
 
 class InputLabelUnit(QGraphicsItem):
-    def __init__(self, index=0, parent=None):
+    def __init__(self, index=0, label="Undefined Label", parent=None):
         super().__init__(parent)
 
         self.index = index
@@ -42,10 +42,9 @@ class InputLabelUnit(QGraphicsItem):
         self.socketBrush = QBrush(QColor("#ffaa00"))
         self.socketOutlinePen = QPen(QColor("#111111"))
         self.label = QGraphicsTextItem(parent=self)
-        self.labelText = "Test Label"
+        self.labelText = label
         self.labelColour = QColor("#FFFFFF")
-
-        # self.init()
+        self.labelFont = QFont()
 
     def boundingRect(self):
         return QRectF(0, 0, self.width, self.height).normalized()
@@ -56,11 +55,12 @@ class InputLabelUnit(QGraphicsItem):
         painter.drawEllipse(-self.socketSize // 2, int((self.height * self.index) + (self.height * 1.5) - (self.socketSize // 2)), self.socketSize, self.socketSize)
         
     def paintLabel(self):
-        # self.label.setPos(0, )
         self.label.setPlainText(self.labelText)
         self.label.setDefaultTextColor(self.labelColour)
         self.label.setPos(self.padding, int((self.height * self.index) + self.height))
-        self.label.setTextWidth(self.width - 2 * self.padding)
+        # self.label.setTextWidth(self.width - 2 * self.padding) # probably dont need this
+        self.labelFont.setPixelSize(14)
+        self.label.setFont(self.labelFont)
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         self.paintSocket(painter)
@@ -73,7 +73,7 @@ class InputLabelUnit(QGraphicsItem):
 #   Input Text Unit class
 
 class BaseNode(QGraphicsItem):
-    def __init__(self, scene, title="New Node", inputs=[], outputs=[], parent=None):
+    def __init__(self, scene, title="Undefined Node", inputs=[], outputs=[], parent=None):
         super().__init__(parent)
         self.scene = scene
         self.title = title
@@ -82,9 +82,14 @@ class BaseNode(QGraphicsItem):
         self.tx = 0
         self.ty = 0
         self.radius = 8
-        self.unitSize = 24
-        self.unitCount = 1
         self.width = 200
+        self.unitSize = 24
+
+        self.unitStack = []
+        self.unitStack.append(OutputUnit(0, parent=self))
+        self.unitStack.append(InputLabelUnit(1, "Value 1", parent=self))
+
+        self.unitCount = len(self.unitStack)
         self.height = (self.unitSize * 1.5) + (self.unitSize * self.unitCount)
         self.padding = 8
         self.titleColor = QColor("#dddddd")
@@ -93,13 +98,7 @@ class BaseNode(QGraphicsItem):
         self.titleElement = QGraphicsTextItem(self)
         self.outlinePenUnselected = QPen(QColor("#111111"))
         self.outlinePenSelected = QPen(QColor("#cccccc"))
-        self.unitStack = []
-
-        # testOutput = OutputUnit(0, parent=self)
-        testInput = InputLabelUnit(0, parent=self)
-        # self.unitStack.append(testOutput)
-        self.unitStack.append(testInput)
-
+        
         self.init()
     
     def boundingRect(self):
@@ -139,7 +138,7 @@ class BaseNode(QGraphicsItem):
         self.titleElement.setPlainText(self.title)
         self.titleElement.setDefaultTextColor(self.titleColor)
         self.titleElement.setPos(self.padding, 0)
-        self.titleElement.setTextWidth(self.width - 2 * self.padding)
+        # self.titleElement.setTextWidth(self.width - 2 * self.padding) # probably dont need this
         
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemIsMovable)
