@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsItem, QGraphicsTextItem
+from PyQt5.QtWidgets import QGraphicsItem, QGraphicsTextItem, QLabel
 from PyQt5.QtGui import QPen, QColor, QBrush, QPainterPath
 from PyQt5.QtCore import Qt, QRectF
 
@@ -37,9 +37,15 @@ class InputLabelUnit(QGraphicsItem):
         self.socketSize = 8
         self.width = parent.width
         self.height = parent.unitSize
+        self.padding = 8
         self.unitBrush = QBrush(QColor("#333333"))
         self.socketBrush = QBrush(QColor("#ffaa00"))
         self.socketOutlinePen = QPen(QColor("#111111"))
+        self.label = QGraphicsTextItem(parent=self)
+        self.labelText = "Test Label"
+        self.labelColour = QColor("#FFFFFF")
+
+        # self.init()
 
     def boundingRect(self):
         return QRectF(0, 0, self.width, self.height).normalized()
@@ -49,8 +55,16 @@ class InputLabelUnit(QGraphicsItem):
         painter.setBrush(self.socketBrush)
         painter.drawEllipse(-self.socketSize // 2, int((self.height * self.index) + (self.height * 1.5) - (self.socketSize // 2)), self.socketSize, self.socketSize)
         
+    def paintLabel(self):
+        # self.label.setPos(0, )
+        self.label.setPlainText(self.labelText)
+        self.label.setDefaultTextColor(self.labelColour)
+        self.label.setPos(self.padding, int((self.height * self.index) + self.height))
+        self.label.setTextWidth(self.width - 2 * self.padding)
+
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         self.paintSocket(painter)
+        self.paintLabel()
 
 #   Input Scalar Unit class
 
@@ -81,8 +95,10 @@ class BaseNode(QGraphicsItem):
         self.outlinePenSelected = QPen(QColor("#cccccc"))
         self.unitStack = []
 
-        testUnit = OutputUnit(0, parent=self)
-        self.unitStack.append(testUnit)
+        # testOutput = OutputUnit(0, parent=self)
+        testInput = InputLabelUnit(0, parent=self)
+        # self.unitStack.append(testOutput)
+        self.unitStack.append(testInput)
 
         self.init()
     
