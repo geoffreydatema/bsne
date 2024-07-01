@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsPathItem
 from PyQt5.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
 from PyQt5.QtCore import Qt, QRectF, QPointF
+from utils.nodeutils import *
 
 class Wire(QGraphicsPathItem):
     def __init__(self, scene, startSocket, endSocket, parent=None):
@@ -16,8 +17,8 @@ class Wire(QGraphicsPathItem):
         self.wirePenSelected.setWidthF(2.0)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setZValue(-1)
-        self.startPosition = [0, 0]
-        self.endPosition = [200, 100]
+        self.startPosition = self.startSocket.getPosition()
+        self.endPosition = self.endSocket.getPosition()
 
         self.scene.addItem(self)
 
@@ -39,16 +40,24 @@ class Wire(QGraphicsPathItem):
         self.setPath(path)
 
 class OutputUnit(QGraphicsItem):
-    def __init__(self, index=0, parent=None):
+    def __init__(self, id=None, index=0, label="Output", parent=None):
         super().__init__(parent)
 
+        self.id = id
         self.index = index
         self.socketSize = 8
+        self.x = parent.x
+        self.y = parent.y
         self.width = parent.width
         self.height = parent.unitSize
+        self.padding = 8
         self.unitBrush = QBrush(QColor("#333333"))
         self.socketBrush = QBrush(QColor("#13FF00"))
         self.socketOutlinePen = QPen(QColor("#111111"))
+        self.label = QGraphicsTextItem(parent=self)
+        self.labelText = label
+        self.labelColour = QColor("#FFFFFF")
+        self.labelFont = QFont()
 
     def boundingRect(self):
         return QRectF(0, 0, self.width, self.height).normalized()
@@ -58,15 +67,29 @@ class OutputUnit(QGraphicsItem):
         painter.setBrush(self.socketBrush)
         painter.drawEllipse(int(self.width - (self.socketSize // 2)), int((self.height * self.index) + (self.height * 1.5) - (self.socketSize // 2)), self.socketSize, self.socketSize)
         
+    def paintLabel(self):
+        self.label.setPlainText(self.labelText)
+        self.label.setDefaultTextColor(self.labelColour)
+        self.label.setPos(self.width - self.label.boundingRect().width() - self.padding, int((self.height * self.index) + self.height))
+        self.labelFont.setPixelSize(14)
+        self.label.setFont(self.labelFont)
+
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         self.paintSocket(painter)
+        self.paintLabel()
+
+    def getPosition(self):
+        return [self.x + self.width, self.y + int((self.height * self.index) + (self.height * 1.5))]
 
 class InputLabelUnit(QGraphicsItem):
-    def __init__(self, index=0, label="Undefined Label", parent=None):
+    def __init__(self, id=None, index=0, label="Undefined Label", parent=None):
         super().__init__(parent)
 
+        self.id = id
         self.index = index
         self.socketSize = 8
+        self.x = parent.x
+        self.y = parent.y
         self.width = parent.width
         self.height = parent.unitSize
         self.padding = 8
@@ -98,6 +121,9 @@ class InputLabelUnit(QGraphicsItem):
         self.paintSocket(painter)
         self.paintLabel()
 
+    def getPosition(self):
+        return [self.x, self.y + int((self.height * self.index) + (self.height * 1.5))]
+
 #   Input Scalar Unit class
 
 #   Input Vector Unit class
@@ -111,16 +137,15 @@ class BaseNode(QGraphicsItem):
         self.title = title
         self.inputs = inputs
         self.outputs = outputs
-        self.tx = 0
-        self.ty = 0
+        self.x = 0
+        self.y = 0
         self.radius = 8
         self.width = 200
         self.unitSize = 24
 
         self.unitStack = []
-        self.unitStack.append(OutputUnit(0, parent=self))
-        self.unitStack.append(InputLabelUnit(1, "Value 1", parent=self))
-
+        self.initUnits()
+        
         self.unitCount = len(self.unitStack)
         self.height = (self.unitSize * 1.5) + (self.unitSize * self.unitCount)
         self.padding = 8
@@ -133,6 +158,17 @@ class BaseNode(QGraphicsItem):
         
         self.init()
     
+    def initUnits(self):
+        unitIndexCounter = 0
+
+        for output in self.outputs:
+            self.unitStack.append(OutputUnit(miniguid(), unitIndexCounter, f"Output {unitIndexCounter}", parent=self))
+            unitIndexCounter += 1
+        
+        for input in self.inputs:
+            self.unitStack.append(InputLabelUnit(miniguid(), unitIndexCounter, f"Value {unitIndexCounter}", parent=self))
+            unitIndexCounter += 1
+
     def boundingRect(self):
         return QRectF(0, 0, self.width, self.height).normalized()
 
@@ -179,9 +215,12 @@ class BaseNode(QGraphicsItem):
         self.scene.addItem(self)
 
     def setPosition(self, x, y):
-        self.tx = x
-        self.ty = y
-        self.setPos(self.tx, self.ty)
+        self.x = x
+        self.y = y
+        for unit in self.unitStack:
+            unit.x = self.x
+            unit.y = self.y
+        self.setPos(self.x, self.y)
     
     def getPosition(self):
-        return(self.tx, self.ty)
+        return(self.x, self.y)

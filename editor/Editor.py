@@ -25,11 +25,14 @@ class Editor(QWidget):
         self.layout.addWidget(self.editorEngine)
 
         # test nodes and wires
-        testNode = BaseNode(self.editorEngine.editorScene, "Test")
-        testNode.setPosition(0, 0)
-        anotherNode = BaseNode(self.editorEngine.editorScene)
+        anotherNode = BaseNode(self.editorEngine.editorScene, "Start Node", inputs=["label"], outputs=["scalar"])
         anotherNode.setPosition(-300, 0)
+        testNode = BaseNode(self.editorEngine.editorScene, "Middle Node", inputs=["label", "label"], outputs=["scalar"])
+        testNode.setPosition(0, 0)
+        thirdNode = BaseNode(self.editorEngine.editorScene, "End Node", inputs=["label"], outputs=["scalar"])
+        thirdNode.setPosition(450, 200)
 
-        testWire = Wire(self.editorEngine.editorScene, 0, 1)
+        testWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], testNode.unitStack[1])
+        secondTestWire = Wire(self.editorEngine.editorScene, testNode.unitStack[0], thirdNode.unitStack[1])
 
         self.show()
