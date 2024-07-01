@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsPathItem
+from PyQt5.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsPathItem
 from PyQt5.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
 from PyQt5.QtCore import Qt, QRectF, QPointF
 from utils.nodeutils import *
@@ -17,16 +17,20 @@ class Wire(QGraphicsPathItem):
         self.wirePenSelected.setWidthF(2.0)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setZValue(-1)
-        self.startPosition = self.startSocket.getPosition()
-        self.endPosition = self.endSocket.getPosition()
+        self.startPosition = []
+        self.endPosition = []
+        self.setStartPosition()
+        self.setEndPosition()
 
         self.scene.addItem(self)
+        self.startSocket.parent.connectedWires.append(self)
+        self.endSocket.parent.connectedWires.append(self)
 
-    def setStartPosition(self, x, y):
-        self.startPosition = [x, y]
+    def setStartPosition(self):
+        self.startPosition = self.startSocket.getPosition()
     
-    def setEndPosition(self, x, y):
-        self.endPosition = [x, y]
+    def setEndPosition(self):
+        self.endPosition = self.endSocket.getPosition()
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         self.updatePath()
@@ -43,6 +47,7 @@ class OutputUnit(QGraphicsItem):
     def __init__(self, id=None, index=0, label="Output", parent=None):
         super().__init__(parent)
 
+        self.parent = parent
         self.id = id
         self.index = index
         self.socketSize = 8
@@ -78,6 +83,10 @@ class OutputUnit(QGraphicsItem):
         self.paintSocket(painter)
         self.paintLabel()
 
+    # def updatePosition(self):
+    #     self.x = self.parent.x
+    #     self.y = self.parent.y
+
     def getPosition(self):
         return [self.x + self.width, self.y + int((self.height * self.index) + (self.height * 1.5))]
 
@@ -85,6 +94,7 @@ class InputLabelUnit(QGraphicsItem):
     def __init__(self, id=None, index=0, label="Undefined Label", parent=None):
         super().__init__(parent)
 
+        self.parent = parent
         self.id = id
         self.index = index
         self.socketSize = 8
@@ -121,6 +131,10 @@ class InputLabelUnit(QGraphicsItem):
         self.paintSocket(painter)
         self.paintLabel()
 
+    # def updatePosition(self):
+    #     self.x = self.parent.x
+    #     self.y = self.parent.y
+
     def getPosition(self):
         return [self.x, self.y + int((self.height * self.index) + (self.height * 1.5))]
 
@@ -134,6 +148,7 @@ class BaseNode(QGraphicsItem):
     def __init__(self, scene, title="Undefined Node", inputs=[], outputs=[], parent=None):
         super().__init__(parent)
         self.scene = scene
+        self.id = miniguid()
         self.title = title
         self.inputs = inputs
         self.outputs = outputs
@@ -142,10 +157,9 @@ class BaseNode(QGraphicsItem):
         self.radius = 8
         self.width = 200
         self.unitSize = 24
-
         self.unitStack = []
         self.initUnits()
-        
+        self.connectedWires = []
         self.unitCount = len(self.unitStack)
         self.height = (self.unitSize * 1.5) + (self.unitSize * self.unitCount)
         self.padding = 8
@@ -211,7 +225,7 @@ class BaseNode(QGraphicsItem):
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemIsMovable)
 
-        self.scene.addNode(self)
+        # self.scene.addNode(self)
         self.scene.addItem(self)
 
     def setPosition(self, x, y):
@@ -224,3 +238,13 @@ class BaseNode(QGraphicsItem):
     
     def getPosition(self):
         return(self.x, self.y)
+
+    def updateConnectedWires(self):
+        self.setPosition(self.pos().x(), self.pos().y())
+        for wire in self.connectedWires:
+            wire.setStartPosition()
+            wire.setEndPosition()
+
+    def mouseMoveEvent(self, event):
+        super().mouseMoveEvent(event)
+        self.updateConnectedWires()

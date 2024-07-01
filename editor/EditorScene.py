@@ -9,8 +9,7 @@ class EditorScene(QGraphicsScene):
         self.init()
 
     def init(self):
-        self.nodes = []
-        self.edges = []
+        # self.nodes = []
         self.sceneWidth = 8192
         self.sceneHeight = 8192
         self.setSceneRect(-self.sceneWidth // 2, -self.sceneHeight // 2, self.sceneWidth, self.sceneHeight)
@@ -45,6 +44,6 @@ class EditorScene(QGraphicsScene):
         painter.setPen(self.penDark)
         painter.drawLines(*gridLines)
 
-    def addNode(self, node):
-        self.nodes.append(node)
+    # def addNode(self, node):
+    #     self.nodes.append(node)
         
