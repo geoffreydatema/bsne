@@ -22,12 +22,13 @@ class EditorEngine(QGraphicsView):
         self.zoomStep = 1
         self.zoomMin = 0
         self.zoomMax = 16
-        self.isDraggingWire = False
+        self.isDraggingWireForwards = False
+        self.isDraggingWireBackwards = False
         self.activeDraggingWire = None
         self.mousePosition = []
 
     def mouseMoveEvent(self, event):
-        if self.isDraggingWire == True:
+        if self.isDraggingWireForwards == True or self.isDraggingWireBackwards == True:
             position = self.mapToScene(event.pos())
             self.mousePosition = [position.x(), position.y()]
         super().mouseMoveEvent(event)
@@ -72,22 +73,31 @@ class EditorEngine(QGraphicsView):
     def leftMouseButtonPress(self, event):
         element = self.getItemAtMouse(event)
         if type(element) is OutputUnit:
-            self.isDraggingWire = True
+            self.isDraggingWireForwards = True
             self.activeDraggingWire = Wire(self.editorScene, startSocket=element)
             return
         if type(element) is InputLabelUnit:
-            # implement draging wire from input backwards to an output
+            self.isDraggingWireBackwards = True
+            self.activeDraggingWire = Wire(self.editorScene, startSocket=element)
             return
         super().mousePressEvent(event)
     
     def leftMouseButtonRelease(self, event):
         element = self.getItemAtMouse(event)
         if type(element) is OutputUnit:
-            return
+            if self.isDraggingWireBackwards == True:
+                if self.activeDraggingWire.startSocket.parent.id != element.parent.id:
+                    self.isDraggingWireBackwards = False
+                    self.activeDraggingWire.setEndSocket(element)
+                self.activeDraggingWire = None
+                return
         if type(element) is InputLabelUnit:
-            self.draggingEdge = False
-            self.activeDraggingWire.setEndSocket(element)
-            return
+            if self.isDraggingWireForwards == True:
+                if self.activeDraggingWire.startSocket.parent.id != element.parent.id:
+                    self.isDraggingWireForwards = False
+                    self.activeDraggingWire.setEndSocket(element)
+                self.activeDraggingWire = None
+                return
         else:
             self.activeDraggingWire = None
         super().mouseReleaseEvent(event)
