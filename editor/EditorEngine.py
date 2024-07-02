@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QGraphicsView
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QMouseEvent, QPainter
 from editor.EditorScene import EditorScene
-from core.Node import InputLabelUnit, OutputUnit
+from core.Node import Wire, InputLabelUnit, OutputUnit
 
 class EditorEngine(QGraphicsView):
     def __init__(self, parent=None):
@@ -10,7 +10,7 @@ class EditorEngine(QGraphicsView):
         self.init()
 
     def init(self):
-        self.editorScene = EditorScene()
+        self.editorScene = EditorScene(self)
         self.setScene(self.editorScene)
         self.setRenderHints(QPainter.Antialiasing | QPainter.HighQualityAntialiasing | QPainter.TextAntialiasing | QPainter.SmoothPixmapTransform)
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
@@ -22,6 +22,15 @@ class EditorEngine(QGraphicsView):
         self.zoomStep = 1
         self.zoomMin = 0
         self.zoomMax = 16
+        self.isDraggingWire = False
+        self.activeDraggingWire = None
+        self.mousePosition = []
+
+    def mouseMoveEvent(self, event):
+        if self.isDraggingWire == True:
+            position = self.mapToScene(event.pos())
+            self.mousePosition = [position.x(), position.y()]
+        super().mouseMoveEvent(event)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MiddleButton:
@@ -55,18 +64,32 @@ class EditorEngine(QGraphicsView):
         super().mouseReleaseEvent(fakeEvent)
         self.setDragMode(QGraphicsView.NoDrag)
 
-    def getItemAtClick(self, event):
+    def getItemAtMouse(self, event):
         position = event.pos()
         element = self.itemAt(position)
         return element
 
     def leftMouseButtonPress(self, event):
-        element = self.getItemAtClick(event)
-        if type(element) is InputLabelUnit or type(element) is OutputUnit:
+        element = self.getItemAtMouse(event)
+        if type(element) is OutputUnit:
+            self.isDraggingWire = True
+            self.activeDraggingWire = Wire(self.editorScene, startSocket=element)
+            return
+        if type(element) is InputLabelUnit:
+            # implement draging wire from input backwards to an output
             return
         super().mousePressEvent(event)
     
     def leftMouseButtonRelease(self, event):
+        element = self.getItemAtMouse(event)
+        if type(element) is OutputUnit:
+            return
+        if type(element) is InputLabelUnit:
+            self.draggingEdge = False
+            self.activeDraggingWire.setEndSocket(element)
+            return
+        else:
+            self.activeDraggingWire = None
         super().mouseReleaseEvent(event)
     
     def rightMouseButtonPress(self, event):

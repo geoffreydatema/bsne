@@ -32,9 +32,9 @@ class Editor(QWidget):
         thirdNode = BaseNode(self.editorEngine.editorScene, "End Node", inputs=["label", "label"], outputs=["scalar"])
         thirdNode.setPosition(450, 200)
 
-        testWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], testNode.unitStack[1])
-        secondTestWire = Wire(self.editorEngine.editorScene, testNode.unitStack[0], thirdNode.unitStack[1])
-        doubleTestWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], testNode.unitStack[2])
-        fourthWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], thirdNode.unitStack[2])
+        # testWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], testNode.unitStack[1])
+        # secondTestWire = Wire(self.editorEngine.editorScene, testNode.unitStack[0], thirdNode.unitStack[1])
+        # doubleTestWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], testNode.unitStack[2])
+        # fourthWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], thirdNode.unitStack[2])
 
         self.show()

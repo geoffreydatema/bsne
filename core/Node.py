@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QRectF, QPointF
 from utils.nodeutils import *
 
 class Wire(QGraphicsPathItem):
-    def __init__(self, scene, startSocket, endSocket, parent=None):
+    def __init__(self, scene, startSocket=None, endSocket=None, parent=None):
         super().__init__(parent)
         self.scene = scene
         self.startSocket = startSocket
@@ -23,20 +23,29 @@ class Wire(QGraphicsPathItem):
         self.setEndPosition()
 
         self.scene.addItem(self)
+        
         self.startSocket.parent.connectedWires.append(self)
-        self.endSocket.parent.connectedWires.append(self)
-
+        if self.endSocket:
+            self.endSocket.parent.connectedWires.append(self)
+        
     def setStartPosition(self):
         self.startPosition = self.startSocket.getPosition()
     
     def setEndPosition(self):
-        self.endPosition = self.endSocket.getPosition()
+        if self.endSocket:
+            self.endPosition = self.endSocket.getPosition()
+
+    def setEndSocket(self, element):
+        self.endSocket = element
+        self.setEndPosition()
+        self.endSocket.parent.connectedWires.append(self)
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
-        self.updatePath()
-        painter.setPen(self.wirePen if not self.isSelected() else self.wirePenSelected)
-        painter.setBrush(Qt.NoBrush)
-        painter.drawPath(self.path())
+        if self.endSocket:
+            self.updatePath()
+            painter.setPen(self.wirePen if not self.isSelected() else self.wirePenSelected)
+            painter.setBrush(Qt.NoBrush)
+            painter.drawPath(self.path())
 
     def updatePath(self):
         path = QPainterPath(QPointF(self.startPosition[0], self.startPosition[1]))

@@ -6,6 +6,7 @@ from PyQt5.QtCore import QLine
 class EditorScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.parent = parent
         self.init()
 
     def init(self):
