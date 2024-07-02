@@ -65,7 +65,7 @@ class OutputUnit(QGraphicsItem):
         self.labelFont = QFont()
 
     def boundingRect(self):
-        return QRectF(0, 0, self.width, self.height).normalized()
+        return QRectF(self.width - self.socketSize // 2, int((self.height * self.index) + self.height), self.socketSize, self.height).normalized()
     
     def paintSocket(self, painter):
         painter.setPen(self.socketOutlinePen)
@@ -82,10 +82,6 @@ class OutputUnit(QGraphicsItem):
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         self.paintSocket(painter)
         self.paintLabel()
-
-    # def updatePosition(self):
-    #     self.x = self.parent.x
-    #     self.y = self.parent.y
 
     def getPosition(self):
         return [self.x + self.width, self.y + int((self.height * self.index) + (self.height * 1.5))]
@@ -112,7 +108,7 @@ class InputLabelUnit(QGraphicsItem):
         self.labelFont = QFont()
 
     def boundingRect(self):
-        return QRectF(0, 0, self.width, self.height).normalized()
+        return QRectF(self.socketSize // 2, int((self.height * self.index) + self.height), -self.socketSize, self.height).normalized()
     
     def paintSocket(self, painter):
         painter.setPen(self.socketOutlinePen)

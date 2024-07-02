@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QGraphicsView
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QMouseEvent, QPainter
 from editor.EditorScene import EditorScene
+from core.Node import InputLabelUnit, OutputUnit
 
 class EditorEngine(QGraphicsView):
     def __init__(self, parent=None):
@@ -54,17 +55,25 @@ class EditorEngine(QGraphicsView):
         super().mouseReleaseEvent(fakeEvent)
         self.setDragMode(QGraphicsView.NoDrag)
 
+    def getItemAtClick(self, event):
+        position = event.pos()
+        element = self.itemAt(position)
+        return element
+
     def leftMouseButtonPress(self, event):
-        return super().mousePressEvent(event)
+        element = self.getItemAtClick(event)
+        if type(element) is InputLabelUnit or type(element) is OutputUnit:
+            return
+        super().mousePressEvent(event)
     
     def leftMouseButtonRelease(self, event):
-        return super().mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
     
     def rightMouseButtonPress(self, event):
-        return super().mousePressEvent(event)
+        super().mousePressEvent(event)
     
     def rightMouseButtonRelease(self, event):
-        return super().mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
     
     def wheelEvent(self, event):
         if event.angleDelta().y() > 0:
