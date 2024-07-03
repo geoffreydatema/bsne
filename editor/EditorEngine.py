@@ -84,8 +84,13 @@ class EditorEngine(QGraphicsView):
     
     def leftMouseButtonRelease(self, event):
         element = self.getItemAtMouse(event)
-        if type(element) is OutputUnit:
+        if type(element) is OutputUnit: # !* do robustness for this condition
             if self.isDraggingWireBackwards == True:
+                for wire in self.activeDraggingWire.startSocket.parent.connectedWires:
+                    if wire.endSocket:
+                        if wire.endSocket.id == self.activeDraggingWire.startSocket.id or wire.startSocket.id == self.activeDraggingWire.startSocket.id:
+                            wire.removeSelf()
+                            del wire
                 if self.activeDraggingWire.startSocket.parent.id != element.parent.id:
                     self.isDraggingWireBackwards = False
                     self.activeDraggingWire.setEndSocket(element)
@@ -93,13 +98,29 @@ class EditorEngine(QGraphicsView):
                 return
         if type(element) is InputLabelUnit:
             if self.isDraggingWireForwards == True:
+                for wire in element.parent.connectedWires:
+                    if wire.endSocket:
+                        if wire.endSocket.id == element.id:
+                            wire.removeSelf()
+                            del wire
                 if self.activeDraggingWire.startSocket.parent.id != element.parent.id:
                     self.isDraggingWireForwards = False
                     self.activeDraggingWire.setEndSocket(element)
                 self.activeDraggingWire = None
                 return
         else:
-            self.activeDraggingWire = None
+            if self.activeDraggingWire:
+                if self.isDraggingWireBackwards == True:
+                    for wire in self.activeDraggingWire.startSocket.parent.connectedWires:
+                        if wire.endSocket:
+                            if wire.endSocket.id == self.activeDraggingWire.startSocket.id or wire.startSocket.id == self.activeDraggingWire.startSocket.id:
+                                wire.removeSelf()
+                                del wire
+                    self.isDraggingWireBackwards = False
+                elif self.isDraggingWireForwards == True:
+                    self.activeDraggingWire.removeSelf()
+                    self.isDraggingWireForwards = False
+                self.activeDraggingWire = None
         super().mouseReleaseEvent(event)
     
     def rightMouseButtonPress(self, event):

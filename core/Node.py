@@ -52,6 +52,9 @@ class Wire(QGraphicsPathItem):
         path.lineTo(self.endPosition[0], self.endPosition[1])
         self.setPath(path)
 
+    def removeSelf(self):
+        self.scene.removeItem(self)
+
 class OutputUnit(QGraphicsItem):
     def __init__(self, id=None, index=0, label="Output", parent=None):
         super().__init__(parent)
