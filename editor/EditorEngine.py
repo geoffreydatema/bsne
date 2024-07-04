@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QMouseEvent, QPainter
 from editor.EditorScene import EditorScene
 from core.Node import Wire, InputLabelUnit, OutputUnit
+from utils.nodeutils import *
 
 class EditorEngine(QGraphicsView):
     def __init__(self, parent=None):
@@ -74,26 +75,26 @@ class EditorEngine(QGraphicsView):
         element = self.getItemAtMouse(event)
         if type(element) is OutputUnit:
             self.isDraggingWireForwards = True
-            self.activeDraggingWire = Wire(self.editorScene, startSocket=element)
+            self.activeDraggingWire = Wire(self.editorScene, miniguid(), startSocket=element)
             return
         if type(element) is InputLabelUnit:
             self.isDraggingWireBackwards = True
-            self.activeDraggingWire = Wire(self.editorScene, startSocket=element)
+            self.activeDraggingWire = Wire(self.editorScene, miniguid(), endSocket=element)
             return
         super().mousePressEvent(event)
     
     def leftMouseButtonRelease(self, event):
         element = self.getItemAtMouse(event)
-        if type(element) is OutputUnit: # !* do robustness for this condition
+        if type(element) is OutputUnit:
             if self.isDraggingWireBackwards == True:
-                for wire in self.activeDraggingWire.startSocket.parent.connectedWires:
-                    if wire.endSocket:
-                        if wire.endSocket.id == self.activeDraggingWire.startSocket.id or wire.startSocket.id == self.activeDraggingWire.startSocket.id:
+                for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
+                    if wire.startSocket:
+                        if wire.endSocket.id == self.activeDraggingWire.endSocket.id:
                             wire.removeSelf()
                             del wire
-                if self.activeDraggingWire.startSocket.parent.id != element.parent.id:
+                if self.activeDraggingWire.endSocket.parent.id != element.parent.id:
                     self.isDraggingWireBackwards = False
-                    self.activeDraggingWire.setEndSocket(element)
+                    self.activeDraggingWire.setStartSocket(element)
                 self.activeDraggingWire = None
                 return
         if type(element) is InputLabelUnit:
@@ -111,11 +112,15 @@ class EditorEngine(QGraphicsView):
         else:
             if self.activeDraggingWire:
                 if self.isDraggingWireBackwards == True:
-                    for wire in self.activeDraggingWire.startSocket.parent.connectedWires:
-                        if wire.endSocket:
-                            if wire.endSocket.id == self.activeDraggingWire.startSocket.id or wire.startSocket.id == self.activeDraggingWire.startSocket.id:
-                                wire.removeSelf()
-                                del wire
+                    for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
+                        if wire.endSocket.id == self.activeDraggingWire.endSocket.id:
+                            wire.removeSelf()
+                            del wire
+                    # check for failed wires which will have no startSocket set
+                    for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
+                        if not wire.startSocket:
+                            wire.removeSelf()
+                            del wire
                     self.isDraggingWireBackwards = False
                 elif self.isDraggingWireForwards == True:
                     self.activeDraggingWire.removeSelf()

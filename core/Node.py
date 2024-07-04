@@ -4,9 +4,10 @@ from PyQt5.QtCore import Qt, QRectF, QPointF
 from utils.nodeutils import *
 
 class Wire(QGraphicsPathItem):
-    def __init__(self, scene, startSocket=None, endSocket=None, parent=None):
+    def __init__(self, scene, id=None, startSocket=None, endSocket=None, parent=None):
         super().__init__(parent)
         self.scene = scene
+        self.id = id
         self.startSocket = startSocket
         self.endSocket = endSocket
         self.wireColour = QColor("#777777")
@@ -24,21 +25,31 @@ class Wire(QGraphicsPathItem):
 
         self.scene.addItem(self)
         
-        self.startSocket.parent.connectedWires.append(self)
+        if self.startSocket:
+            self.startSocket.parent.connectedWires.append(self)
         if self.endSocket:
             self.endSocket.parent.connectedWires.append(self)
+
+        # !* question for the future: if we append a connected wire to the node right away, do we remove the wire when it's removed from the scene?
         
     def setStartPosition(self):
-        self.startPosition = self.startSocket.getPosition()
+        if self.startSocket:
+            self.startPosition = self.startSocket.getPosition()
     
     def setEndPosition(self):
         if self.endSocket:
             self.endPosition = self.endSocket.getPosition()
 
+    def setStartSocket(self, element):
+        self.startSocket = element
+        self.setStartPosition()
+        self.startSocket.parent.connectedWires.append(self)
+
     def setEndSocket(self, element):
         self.endSocket = element
         self.setEndPosition()
         self.endSocket.parent.connectedWires.append(self)
+        print(f"adding to end node: {self.endSocket.parent.id} {self.endSocket.parent.connectedWires}")
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if self.endSocket:
@@ -48,11 +59,24 @@ class Wire(QGraphicsPathItem):
             painter.drawPath(self.path())
 
     def updatePath(self):
-        path = QPainterPath(QPointF(self.startPosition[0], self.startPosition[1]))
-        path.lineTo(self.endPosition[0], self.endPosition[1])
-        self.setPath(path)
+        if self.startPosition and self.endPosition:
+            path = QPainterPath(QPointF(self.startPosition[0], self.startPosition[1]))
+            path.lineTo(self.endPosition[0], self.endPosition[1])
+            self.setPath(path)
 
     def removeSelf(self):
+        if self.startSocket:
+            index = 0
+            for wire in self.startSocket.parent.connectedWires:
+                if wire.id == self.id:
+                    del self.startSocket.parent.connectedWires[index]
+                index += 1
+        if self.endSocket:
+            index = 0
+            for wire in self.endSocket.parent.connectedWires:
+                if wire.id == self.id:
+                    del self.endSocket.parent.connectedWires[index]
+                index += 1
         self.scene.removeItem(self)
 
 class OutputUnit(QGraphicsItem):

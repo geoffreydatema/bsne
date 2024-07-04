@@ -27,7 +27,7 @@ class Editor(QWidget):
         # test nodes and wires
         anotherNode = BaseNode(self.editorEngine.editorScene, "Start Node", inputs=["label"], outputs=["scalar"])
         anotherNode.setPosition(-300, 0)
-        testNode = BaseNode(self.editorEngine.editorScene, "Middle Node", inputs=["label", "label"], outputs=["scalar"])
+        testNode = BaseNode(self.editorEngine.editorScene, "Middle Node", inputs=["label", "label", "label"], outputs=["scalar"])
         testNode.setPosition(0, 0)
         thirdNode = BaseNode(self.editorEngine.editorScene, "End Node", inputs=["label", "label"], outputs=["scalar"])
         thirdNode.setPosition(-300, 200)
