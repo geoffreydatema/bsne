@@ -311,3 +311,8 @@ class BaseNode(QGraphicsItem):
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         self.updateConnectedWires()
+    
+    def removeSelf(self):
+        while len(self.connectedWires) > 0:
+            self.connectedWires[0].removeSelf()
+        self.scene.removeItem(self)

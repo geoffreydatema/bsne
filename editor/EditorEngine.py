@@ -28,13 +28,32 @@ class EditorEngine(QGraphicsView):
         self.activeDraggingWire = None
         self.liveDraggingWire = None
         self.nodes = []
+        self.currentlySelectedNode = None
 
-    def keyAHandler(self, event):
-        self.nodes.append(BaseNode(self.editorScene, "First Node", inputs=["label"], outputs=["scalar"]))
+    def getElementAtMouse(self, event):
+        position = event.pos()
+        element = self.itemAt(position)
+        return element
+    
+    def addNode(self, event):
+        self.nodes.append(BaseNode(self.editorScene, "First Node", inputs=["label", "label"], outputs=["scalar"]))
+
+    def deleteNode(self, event):
+        counter = 0
+        for node in self.nodes:
+            if node.id == self.currentlySelectedNode.id:
+                node.removeSelf()
+                del self.nodes[counter]
+            counter += 1
+        print(self.nodes)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_A:
-            self.keyAHandler(event)
+            self.addNode(event)
+        if event.key() == Qt.Key_X:
+            self.deleteNode(event)
+        if event.key() == Qt.Key_Delete:
+            self.deleteNode(event)
 
     def mouseMoveEvent(self, event):
         position = self.mapToScene(event.pos())
@@ -74,19 +93,14 @@ class EditorEngine(QGraphicsView):
         super().mouseReleaseEvent(fakeEvent)
         self.setDragMode(QGraphicsView.NoDrag)
 
-    def getItemAtMouse(self, event):
-        position = event.pos()
-        element = self.itemAt(position)
-        return element
-
     def leftMouseButtonPress(self, event):
-        element = self.getItemAtMouse(event)
+        element = self.getElementAtMouse(event)
         if type(element) is OutputUnit:
             self.isDraggingWireForwards = True
             self.activeDraggingWire = Wire(self.editorScene, miniguid(), startSocket=element)
             self.liveDraggingWire = LiveWire(self.editorScene, id="LIVEWIREFORWARDS", startSocket=element)
             return
-        if type(element) is InputLabelUnit:
+        elif type(element) is InputLabelUnit:
             self.isDraggingWireBackwards = True
             self.activeDraggingWire = Wire(self.editorScene, miniguid(), endSocket=element)
 
@@ -99,10 +113,18 @@ class EditorEngine(QGraphicsView):
 
             self.liveDraggingWire = LiveWire(self.editorScene, id="LIVEWIREBACKWARDS", endSocket=element)
             return
+        else:
+            if element:
+                if isinstance(element, BaseNode):
+                    self.currentlySelectedNode = element
+                elif isinstance(element.parentItem(), BaseNode):
+                    self.currentlySelectedNode = element.parentItem()
+                elif isinstance(element.parentItem().parent, BaseNode):
+                    self.currentlySelectedNode = element.parentItem().parent
         super().mousePressEvent(event)
     
     def leftMouseButtonRelease(self, event):
-        element = self.getItemAtMouse(event)
+        element = self.getElementAtMouse(event)
 
         # regardless of where we release the left click, self.liveDraggingWire must be removed from the scene
         if self.liveDraggingWire:
