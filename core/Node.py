@@ -70,11 +70,7 @@ class Wire(QGraphicsPathItem):
                     del self.startSocket.parent.connectedWires[index]
                 index += 1
         if self.endSocket:
-            if self.endSocket == True:
-                # this condition gets triggered if the wire is a live dragging wire
-                # it's not referenced in any connectedWires list so we just do nothing and let it be removed from the scene
-                pass
-            else:
+            if not self.id == "LIVEWIREFORWARDS" and not self.id == "LIVEWIREBACKWARDS":
                 index = 0
                 for wire in self.endSocket.parent.connectedWires:
                     if wire.id == self.id:
@@ -84,6 +80,7 @@ class Wire(QGraphicsPathItem):
 
 class LiveWire(Wire):
     def __init__(self, scene, id=None, startSocket=None, parent=None):
+
         super().__init__(scene, id, startSocket, parent)
 
         # the live dragging wire has a lighter colour to help with user feedback
@@ -91,8 +88,9 @@ class LiveWire(Wire):
         self.wirePen = QPen(self.wireColour)
         self.wirePen.setWidthF(2.0)
 
-        # we need to allow the wire to render, so we give self.endSocket a value
-        self.endSocket = True
+        # we need to allow the wire to render, so we give the sockets a True value depending on the direction of the wire
+        if self.id == "LIVEWIREFORWARDS":
+            self.endSocket = True
 
     def setEndPosition(self):
         if self.endSocket:
@@ -100,7 +98,8 @@ class LiveWire(Wire):
         
     def render(self, x, y):
         self.endPosition = [x, y]
-        self.setEndPosition()
+        if self.id == "LIVEWIREFORWARDS":
+            self.setEndPosition()
 
 class OutputUnit(QGraphicsItem):
     def __init__(self, id=None, index=0, label="Output", parent=None):

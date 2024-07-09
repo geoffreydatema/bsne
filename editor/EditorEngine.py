@@ -79,11 +79,12 @@ class EditorEngine(QGraphicsView):
         if type(element) is OutputUnit:
             self.isDraggingWireForwards = True
             self.activeDraggingWire = Wire(self.editorScene, miniguid(), startSocket=element)
-            self.liveDraggingWire = LiveWire(self.editorScene, miniguid(), startSocket=element)
+            self.liveDraggingWire = LiveWire(self.editorScene, id="LIVEWIREFORWARDS", startSocket=element)
             return
         if type(element) is InputLabelUnit:
             self.isDraggingWireBackwards = True
             self.activeDraggingWire = Wire(self.editorScene, miniguid(), endSocket=element)
+            # self.liveDraggingWire = LiveWire(self.editorScene, startSocket=element)
             return
         super().mousePressEvent(event)
     
