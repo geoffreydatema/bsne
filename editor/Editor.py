@@ -26,14 +26,14 @@ class Editor(QWidget):
         self.layout.addWidget(self.editorEngine)
 
         # test nodes and wires
-        firstNode = BaseNode(self.editorEngine.editorScene, "First Node", inputs=["label"], outputs=["scalar"])
-        firstNode.setPosition(-300, 0)
-        secondNode = BaseNode(self.editorEngine.editorScene, "Second Node", inputs=["label", "label", "label"], outputs=["scalar"])
-        secondNode.setPosition(0, 0)
-        thirdNode = BaseNode(self.editorEngine.editorScene, "Third Node", inputs=["label", "label"], outputs=["scalar"])
-        thirdNode.setPosition(-300, 200)
-        fourthNode = BaseNode(self.editorEngine.editorScene, "Fourth Node", inputs=["label", "label", "label", "label"], outputs=["scalar", "scalar"])
-        fourthNode.setPosition(-50, 300)
+        # firstNode = BaseNode(self.editorEngine.editorScene, "First Node", inputs=["label"], outputs=["scalar"])
+        # firstNode.setPosition(-300, 0)
+        # secondNode = BaseNode(self.editorEngine.editorScene, "Second Node", inputs=["label", "label", "label"], outputs=["scalar"])
+        # secondNode.setPosition(0, 0)
+        # thirdNode = BaseNode(self.editorEngine.editorScene, "Third Node", inputs=["label", "label"], outputs=["scalar"])
+        # thirdNode.setPosition(-300, 200)
+        # fourthNode = BaseNode(self.editorEngine.editorScene, "Fourth Node", inputs=["label", "label", "label", "label"], outputs=["scalar", "scalar"])
+        # fourthNode.setPosition(-50, 300)
 
         # firstWire = Wire(self.editorEngine.editorScene, miniguid(), firstNode.unitStack[0], secondNode.unitStack[1])
 

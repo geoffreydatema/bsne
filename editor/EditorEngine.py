@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QGraphicsView
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QMouseEvent, QPainter
 from editor.EditorScene import EditorScene
-from core.Node import Wire, LiveWire, InputLabelUnit, OutputUnit
+from core.Node import BaseNode, Wire, LiveWire, InputLabelUnit, OutputUnit
 from utils.nodeutils import *
 
 class EditorEngine(QGraphicsView):
@@ -27,12 +27,17 @@ class EditorEngine(QGraphicsView):
         self.isDraggingWireBackwards = False
         self.activeDraggingWire = None
         self.liveDraggingWire = None
-        # self.mousePosition = []
+        self.nodes = []
+
+    def keyAHandler(self, event):
+        self.nodes.append(BaseNode(self.editorScene, "First Node", inputs=["label"], outputs=["scalar"]))
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_A:
+            self.keyAHandler(event)
 
     def mouseMoveEvent(self, event):
         position = self.mapToScene(event.pos())
-        # if self.isDraggingWireForwards == True or self.isDraggingWireBackwards == True:
-        #     self.mousePosition = [position.x(), position.y()]
         if self.liveDraggingWire:
             self.liveDraggingWire.render(position.x(), position.y())
         super().mouseMoveEvent(event)
@@ -85,20 +90,12 @@ class EditorEngine(QGraphicsView):
             self.isDraggingWireBackwards = True
             self.activeDraggingWire = Wire(self.editorScene, miniguid(), endSocket=element)
 
-            #!* this is indeed removing any connected wire, but this block might also be preventing good connections from being made backwards, check after doing livedraggingwire
             if self.isDraggingWireBackwards == True:
                 for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
                     if wire.id != self.activeDraggingWire.id:
                         if wire.endSocket.id == self.activeDraggingWire.endSocket.id:
                             wire.removeSelf()
                             del wire
-                # check for failed wires which will have no startSocket set
-                # for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
-                #     if wire.id != self.activeDraggingWire.id:
-                #         if not wire.startSocket:
-                #             wire.removeSelf()
-                #             del wire
-                # self.isDraggingWireBackwards = False
 
             self.liveDraggingWire = LiveWire(self.editorScene, id="LIVEWIREBACKWARDS", endSocket=element)
             return
@@ -139,20 +136,18 @@ class EditorEngine(QGraphicsView):
         else:
             if self.activeDraggingWire:
                 if self.isDraggingWireBackwards == True:
-                #     for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
-                #         if wire.endSocket.id == self.activeDraggingWire.endSocket.id:
-                #             wire.removeSelf()
-                #             del wire
                     # check for failed wires which will have no startSocket set
                     for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
                         if not wire.startSocket:
                             wire.removeSelf()
                             del wire
-                self.isDraggingWireBackwards = False
+                    self.isDraggingWireBackwards = False
                 if self.isDraggingWireForwards == True:
                     self.activeDraggingWire.removeSelf()
                     self.isDraggingWireForwards = False
+                wire = self.activeDraggingWire
                 self.activeDraggingWire = None
+                del wire
         super().mouseReleaseEvent(event)
     
     def rightMouseButtonPress(self, event):
