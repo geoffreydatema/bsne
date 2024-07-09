@@ -62,15 +62,15 @@ class Wire(QGraphicsPathItem):
             self.setPath(path)
 
     def removeSelf(self):
-        print(f"deleting id {self.id}")
         if self.startSocket:
-            index = 0
-            for wire in self.startSocket.parent.connectedWires:
-                if wire.id == self.id:
-                    del self.startSocket.parent.connectedWires[index]
-                index += 1
+            if not self.id == "LIVEWIREBACKWARDS":
+                index = 0
+                for wire in self.startSocket.parent.connectedWires:
+                    if wire.id == self.id:
+                        del self.startSocket.parent.connectedWires[index]
+                    index += 1
         if self.endSocket:
-            if not self.id == "LIVEWIREFORWARDS" and not self.id == "LIVEWIREBACKWARDS":
+            if not self.id == "LIVEWIREFORWARDS":
                 index = 0
                 for wire in self.endSocket.parent.connectedWires:
                     if wire.id == self.id:
@@ -79,9 +79,9 @@ class Wire(QGraphicsPathItem):
         self.scene.removeItem(self)
 
 class LiveWire(Wire):
-    def __init__(self, scene, id=None, startSocket=None, parent=None):
+    def __init__(self, scene, id=None, startSocket=None, endSocket=None, parent=None):
 
-        super().__init__(scene, id, startSocket, parent)
+        super().__init__(scene, id, startSocket, endSocket, parent)
 
         # the live dragging wire has a lighter colour to help with user feedback
         self.wireColour = QColor("#999999")
@@ -91,15 +91,28 @@ class LiveWire(Wire):
         # we need to allow the wire to render, so we give the sockets a True value depending on the direction of the wire
         if self.id == "LIVEWIREFORWARDS":
             self.endSocket = True
+        elif self.id == "LIVEWIREBACKWARDS":
+            self.startSocket = True
+
+    def setStartPosition(self):
+        if self.startSocket and self.id == "LIVEWIREFORWARDS":
+            self.startPosition = self.startSocket.getPosition()
+        elif self.startSocket and self.startPosition:
+            return [self.startPosition[0], self.startPosition[1]]
 
     def setEndPosition(self):
-        if self.endSocket:
+        if self.endSocket and self.id == "LIVEWIREBACKWARDS":
+            self.endPosition = self.endSocket.getPosition()
+        elif self.endSocket and self.endPosition:
             return [self.endPosition[0], self.endPosition[1]]
         
     def render(self, x, y):
-        self.endPosition = [x, y]
         if self.id == "LIVEWIREFORWARDS":
+            self.endPosition = [x, y]
             self.setEndPosition()
+        elif self.id == "LIVEWIREBACKWARDS":
+            self.startPosition = [x, y]
+            self.setStartPosition()
 
 class OutputUnit(QGraphicsItem):
     def __init__(self, id=None, index=0, label="Output", parent=None):

@@ -84,7 +84,23 @@ class EditorEngine(QGraphicsView):
         if type(element) is InputLabelUnit:
             self.isDraggingWireBackwards = True
             self.activeDraggingWire = Wire(self.editorScene, miniguid(), endSocket=element)
-            # self.liveDraggingWire = LiveWire(self.editorScene, startSocket=element)
+
+            #!* this is indeed removing any connected wire, but this block might also be preventing good connections from being made backwards, check after doing livedraggingwire
+            if self.isDraggingWireBackwards == True:
+                for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
+                    if wire.id != self.activeDraggingWire.id:
+                        if wire.endSocket.id == self.activeDraggingWire.endSocket.id:
+                            wire.removeSelf()
+                            del wire
+                # check for failed wires which will have no startSocket set
+                # for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
+                #     if wire.id != self.activeDraggingWire.id:
+                #         if not wire.startSocket:
+                #             wire.removeSelf()
+                #             del wire
+                # self.isDraggingWireBackwards = False
+
+            self.liveDraggingWire = LiveWire(self.editorScene, id="LIVEWIREBACKWARDS", endSocket=element)
             return
         super().mousePressEvent(event)
     
@@ -123,17 +139,17 @@ class EditorEngine(QGraphicsView):
         else:
             if self.activeDraggingWire:
                 if self.isDraggingWireBackwards == True:
-                    for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
-                        if wire.endSocket.id == self.activeDraggingWire.endSocket.id:
-                            wire.removeSelf()
-                            del wire
+                #     for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
+                #         if wire.endSocket.id == self.activeDraggingWire.endSocket.id:
+                #             wire.removeSelf()
+                #             del wire
                     # check for failed wires which will have no startSocket set
                     for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
                         if not wire.startSocket:
                             wire.removeSelf()
                             del wire
-                    self.isDraggingWireBackwards = False
-                elif self.isDraggingWireForwards == True:
+                self.isDraggingWireBackwards = False
+                if self.isDraggingWireForwards == True:
                     self.activeDraggingWire.removeSelf()
                     self.isDraggingWireForwards = False
                 self.activeDraggingWire = None
