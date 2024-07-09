@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
 from PyQt5.QtCore import QFile
 from editor.EditorEngine import EditorEngine
 from core.Node import BaseNode, Wire
+from utils.nodeutils import *
 
 class Editor(QWidget):
     def __init__(self, parent=None):
@@ -25,16 +26,15 @@ class Editor(QWidget):
         self.layout.addWidget(self.editorEngine)
 
         # test nodes and wires
-        anotherNode = BaseNode(self.editorEngine.editorScene, "Start Node", inputs=["label"], outputs=["scalar"])
-        anotherNode.setPosition(-300, 0)
-        testNode = BaseNode(self.editorEngine.editorScene, "Middle Node", inputs=["label", "label", "label"], outputs=["scalar"])
-        testNode.setPosition(0, 0)
-        thirdNode = BaseNode(self.editorEngine.editorScene, "End Node", inputs=["label", "label"], outputs=["scalar"])
+        firstNode = BaseNode(self.editorEngine.editorScene, "First Node", inputs=["label"], outputs=["scalar"])
+        firstNode.setPosition(-300, 0)
+        secondNode = BaseNode(self.editorEngine.editorScene, "Second Node", inputs=["label", "label", "label"], outputs=["scalar"])
+        secondNode.setPosition(0, 0)
+        thirdNode = BaseNode(self.editorEngine.editorScene, "Third Node", inputs=["label", "label"], outputs=["scalar"])
         thirdNode.setPosition(-300, 200)
+        fourthNode = BaseNode(self.editorEngine.editorScene, "Fourth Node", inputs=["label", "label", "label", "label"], outputs=["scalar", "scalar"])
+        fourthNode.setPosition(-50, 300)
 
-        # testWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], testNode.unitStack[1])
-        # secondTestWire = Wire(self.editorEngine.editorScene, testNode.unitStack[0], thirdNode.unitStack[1])
-        # doubleTestWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], testNode.unitStack[2])
-        # fourthWire = Wire(self.editorEngine.editorScene, anotherNode.unitStack[0], thirdNode.unitStack[2])
+        # firstWire = Wire(self.editorEngine.editorScene, miniguid(), firstNode.unitStack[0], secondNode.unitStack[1])
 
         self.show()

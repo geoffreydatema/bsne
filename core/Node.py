@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent, QGraphicsTextItem, QGraphicsPathItem
-from PyQt5.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
+from PyQt5.QtGui import QPen, QColor, QBrush, QPainterPath, QFont, QCursor
 from PyQt5.QtCore import Qt, QRectF, QPointF
 from utils.nodeutils import *
 
@@ -29,8 +29,6 @@ class Wire(QGraphicsPathItem):
             self.startSocket.parent.connectedWires.append(self)
         if self.endSocket:
             self.endSocket.parent.connectedWires.append(self)
-
-        # !* question for the future: if we append a connected wire to the node right away, do we remove the wire when it's removed from the scene?
         
     def setStartPosition(self):
         if self.startSocket:
@@ -49,7 +47,6 @@ class Wire(QGraphicsPathItem):
         self.endSocket = element
         self.setEndPosition()
         self.endSocket.parent.connectedWires.append(self)
-        print(f"adding to end node: {self.endSocket.parent.id} {self.endSocket.parent.connectedWires}")
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if self.endSocket:
@@ -65,6 +62,7 @@ class Wire(QGraphicsPathItem):
             self.setPath(path)
 
     def removeSelf(self):
+        print(f"deleting id {self.id}")
         if self.startSocket:
             index = 0
             for wire in self.startSocket.parent.connectedWires:
@@ -72,12 +70,37 @@ class Wire(QGraphicsPathItem):
                     del self.startSocket.parent.connectedWires[index]
                 index += 1
         if self.endSocket:
-            index = 0
-            for wire in self.endSocket.parent.connectedWires:
-                if wire.id == self.id:
-                    del self.endSocket.parent.connectedWires[index]
-                index += 1
+            if self.endSocket == True:
+                # this condition gets triggered if the wire is a live dragging wire
+                # it's not referenced in any connectedWires list so we just do nothing and let it be removed from the scene
+                pass
+            else:
+                index = 0
+                for wire in self.endSocket.parent.connectedWires:
+                    if wire.id == self.id:
+                        del self.endSocket.parent.connectedWires[index]
+                    index += 1
         self.scene.removeItem(self)
+
+class LiveWire(Wire):
+    def __init__(self, scene, id=None, startSocket=None, parent=None):
+        super().__init__(scene, id, startSocket, parent)
+
+        # the live dragging wire has a lighter colour to help with user feedback
+        self.wireColour = QColor("#999999")
+        self.wirePen = QPen(self.wireColour)
+        self.wirePen.setWidthF(2.0)
+
+        # we need to allow the wire to render, so we give self.endSocket a value
+        self.endSocket = True
+
+    def setEndPosition(self):
+        if self.endSocket:
+            return [self.endPosition[0], self.endPosition[1]]
+        
+    def render(self, x, y):
+        self.endPosition = [x, y]
+        self.setEndPosition()
 
 class OutputUnit(QGraphicsItem):
     def __init__(self, id=None, index=0, label="Output", parent=None):
@@ -162,10 +185,6 @@ class InputLabelUnit(QGraphicsItem):
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         self.paintSocket(painter)
         self.paintLabel()
-
-    # def updatePosition(self):
-    #     self.x = self.parent.x
-    #     self.y = self.parent.y
 
     def getPosition(self):
         return [self.x, self.y + int((self.height * self.index) + (self.height * 1.5))]

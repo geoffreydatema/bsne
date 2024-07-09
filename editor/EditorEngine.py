@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QGraphicsView
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QMouseEvent, QPainter
 from editor.EditorScene import EditorScene
-from core.Node import Wire, InputLabelUnit, OutputUnit
+from core.Node import Wire, LiveWire, InputLabelUnit, OutputUnit
 from utils.nodeutils import *
 
 class EditorEngine(QGraphicsView):
@@ -26,12 +26,15 @@ class EditorEngine(QGraphicsView):
         self.isDraggingWireForwards = False
         self.isDraggingWireBackwards = False
         self.activeDraggingWire = None
-        self.mousePosition = []
+        self.liveDraggingWire = None
+        # self.mousePosition = []
 
     def mouseMoveEvent(self, event):
-        if self.isDraggingWireForwards == True or self.isDraggingWireBackwards == True:
-            position = self.mapToScene(event.pos())
-            self.mousePosition = [position.x(), position.y()]
+        position = self.mapToScene(event.pos())
+        # if self.isDraggingWireForwards == True or self.isDraggingWireBackwards == True:
+        #     self.mousePosition = [position.x(), position.y()]
+        if self.liveDraggingWire:
+            self.liveDraggingWire.render(position.x(), position.y())
         super().mouseMoveEvent(event)
 
     def mousePressEvent(self, event):
@@ -76,6 +79,7 @@ class EditorEngine(QGraphicsView):
         if type(element) is OutputUnit:
             self.isDraggingWireForwards = True
             self.activeDraggingWire = Wire(self.editorScene, miniguid(), startSocket=element)
+            self.liveDraggingWire = LiveWire(self.editorScene, miniguid(), startSocket=element)
             return
         if type(element) is InputLabelUnit:
             self.isDraggingWireBackwards = True
@@ -85,6 +89,12 @@ class EditorEngine(QGraphicsView):
     
     def leftMouseButtonRelease(self, event):
         element = self.getItemAtMouse(event)
+
+        # regardless of where we release the left click, self.liveDraggingWire must be removed from the scene
+        if self.liveDraggingWire:
+            self.liveDraggingWire.removeSelf()
+            self.liveDraggingWire = None
+
         if type(element) is OutputUnit:
             if self.isDraggingWireBackwards == True:
                 for wire in self.activeDraggingWire.endSocket.parent.connectedWires:
