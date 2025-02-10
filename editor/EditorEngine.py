@@ -39,13 +39,12 @@ class EditorEngine(QGraphicsView):
         self.nodes.append(BaseNode(self.editorScene, "First Node", inputs=["label", "label"], outputs=["scalar"]))
 
     def deleteNode(self, event):
-        counter = 0
+        index = 0
         for node in self.nodes:
             if node.id == self.currentlySelectedNode.id:
                 node.removeSelf()
-                del self.nodes[counter]
-            counter += 1
-        print(self.nodes)
+                del self.nodes[index]
+            index += 1
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_A:
